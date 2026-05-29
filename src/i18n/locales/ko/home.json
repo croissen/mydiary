@@ -1,0 +1,35 @@
+{
+  "greeting": "오늘 하루, 한 줄씩",
+  "weekProgress": "이번 주",
+  "empty": "아직 오늘의 답변이 없어요.\n알림이 오면 한 줄 남겨보세요.",
+  "card": {
+    "answered": "답함",
+    "skipped": "건너뜀",
+    "waiting": "대기 중",
+    "new": "새 질문",
+    "answerNow": "답하러 가기",
+    "tapToAnswer": "탭해서 답하기"
+  },
+  "viewDiary": "오늘 일기 보기",
+  "addNote": "+ 새 노트 추가",
+  "diaryPending": "오늘 밤 {{time}}에 하루를 일기로 정리해 드려요.",
+  "diaryNoResponses": "오늘은 아직 남긴 한 줄이 없어요.\n알림이 오면 답해보세요.",
+  "diaryMissed": "오늘은 기록이 없어 일기를 만들지 못했어요.",
+  "diaryReady": {
+    "title": "오늘의 일기가 도착했어요 📔",
+    "body": "오늘 하루가 한 편의 일기로 정리됐어요.",
+    "view": "일기 보기"
+  },
+  "noDiaryToday": "오늘은 정리할 기록이 없었어요.",
+  "diaryFailed": {
+    "title": "일기를 만들지 못했어요",
+    "body": "AI 연결에 문제가 있었어요. 답변은 그대로 남아 있으니 다시 시도해 주세요."
+  },
+  "answer": {
+    "title": "지금 어때요?",
+    "placeholder": "한 줄이면 충분해요...",
+    "saved": "저장했어요",
+    "voiceHint": "음성 입력 (곧 지원)"
+  },
+  "compileError": "일기를 만들지 못했어요. 잠시 후 다시 시도해 주세요."
+}

@@ -1,0 +1,43 @@
+{
+  "title": "노트",
+  "searchPlaceholder": "노트 검색...",
+  "filterAll": "전체",
+  "filterFavorites": "⭐ 즐겨찾기",
+  "noFolder": "폴더 없음",
+  "addNote": "노트 추가",
+  "addFolder": "폴더 추가",
+  "empty": "아직 노트가 없어요.\n아래 '노트 추가'로 첫 노트를 남겨보세요.",
+  "untitled": "(제목 없음)",
+  "menu": {
+    "favorite": "즐겨찾기 추가",
+    "unfavorite": "즐겨찾기 해제",
+    "move": "폴더 이동",
+    "rename": "이름 변경",
+    "delete": "삭제"
+  },
+  "folderMenu": {
+    "moveUp": "위로 이동",
+    "moveDown": "아래로 이동",
+    "rename": "폴더명 변경",
+    "delete": "폴더 삭제"
+  },
+  "renameNoteTitle": "노트 이름 변경",
+  "renameFolderTitle": "폴더명 변경",
+  "newFolderTitle": "새 폴더",
+  "newFolderPlaceholder": "폴더 이름",
+  "moveTitle": "폴더로 이동",
+  "deleteNoteConfirm": "이 노트를 삭제할까요?",
+  "deleteFolderConfirm": "폴더를 삭제할까요? 안의 노트는 '폴더 없음'으로 이동돼요.",
+  "editor": {
+    "titlePlaceholder": "제목",
+    "contentPlaceholder": "내용을 입력하세요...",
+    "reminder": "알림",
+    "reminderTime": "알림 시간",
+    "repeatOnce": "한 번만",
+    "repeatDaily": "매일",
+    "save": "저장",
+    "saved": "저장되었습니다",
+    "delete": "삭제",
+    "reminderHint": "켜면 지정한 시간에 노트 제목이 알림으로 떠요."
+  }
+}

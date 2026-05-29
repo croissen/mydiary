@@ -1,0 +1,13 @@
+name = "mydiary-ai"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# 배포 전: Gemini API 키를 시크릿으로 등록하세요 (코드/설정에 키를 넣지 마세요)
+#   npx wrangler secret put GEMINI_API_KEY
+#
+# 모델을 바꾸려면 아래 주석을 풀어 지정 (기본: gemini-2.0-flash)
+# [vars]
+# GEMINI_MODEL = "gemini-2.5-flash"
+#
+# 로그 비저장: 기본적으로 console.log를 사용하지 않습니다.
+# wrangler tail 같은 실시간 로그도 켜지 마세요.

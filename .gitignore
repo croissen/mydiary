@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# project-local junk
+dist-check/
+build_result*.json
+
+# Cloudflare Worker
+worker/.wrangler/
+

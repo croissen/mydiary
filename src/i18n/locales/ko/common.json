@@ -1,0 +1,37 @@
+{
+  "appName": "한 줄 일기",
+  "save": "저장",
+  "cancel": "취소",
+  "confirm": "확인",
+  "done": "완료",
+  "next": "다음",
+  "back": "뒤로",
+  "skip": "스킵",
+  "later": "나중에",
+  "edit": "편집",
+  "delete": "삭제",
+  "share": "공유",
+  "close": "닫기",
+  "retry": "다시 시도",
+  "loading": "불러오는 중...",
+  "today": "오늘",
+  "yesterday": "어제",
+  "error": "오류",
+  "errorGeneric": "문제가 발생했어요. 다시 시도해 주세요.",
+  "aiServerError": "AI 서버에 연결하지 못했어요.\n네트워크를 확인하고 잠시 후 다시 시도해 주세요.",
+  "aiRateLimited": "무료 AI 사용 한도에 도달했어요.\n잠시 후 다시 시도해 주세요.",
+  "tone": {
+    "casual": "캐주얼",
+    "literary": "문학적",
+    "concise": "심플",
+    "custom": "커스텀"
+  },
+  "tabs": {
+    "home": "홈",
+    "calendar": "달력",
+    "notes": "노트",
+    "settings": "설정"
+  },
+  "weekdays": ["일", "월", "화", "수", "목", "금", "토"],
+  "months": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
+}

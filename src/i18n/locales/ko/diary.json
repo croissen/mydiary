@@ -1,0 +1,16 @@
+{
+  "title": "일기",
+  "regenerate": "어조 바꿔 다시 쓰기",
+  "regenerating": "다시 쓰는 중...",
+  "showResponses": "원본 응답 보기",
+  "hideResponses": "원본 응답 숨기기",
+  "edited": "직접 수정함",
+  "editPlaceholder": "일기를 직접 다듬어보세요...",
+  "saveEdit": "수정 저장",
+  "copied": "클립보드에 복사했어요",
+  "noResponses": "이날은 응답이 없어요.",
+  "noDiary": "이날은 아직 일기가 없어요.",
+  "selectTone": "AI 스타일",
+  "customStyleNeeded": "커스텀 스타일을 먼저 설정하세요.\n설정 → AI 스타일 → 커스텀에서 원하는 말투를 입력할 수 있어요.",
+  "customStyleLabel": "커스텀 스타일: {{style}}"
+}

@@ -1,0 +1,19 @@
+{
+  "title": "달력",
+  "monthly": "월간",
+  "list": "목록",
+  "empty": "아직 기록이 없어요.",
+  "responsesCount": "응답 {{count}}개",
+  "noDiaryYet": "일기 없음",
+  "viewDiary": "일기 보기",
+  "viewNotes": "노트 보기",
+  "noDiaryThatDay": "이 날은 일기가 없어요.",
+  "setHoliday": "휴일로 지정 (빨강)",
+  "unsetHoliday": "휴일 지정 해제",
+  "highlighter": "형광펜",
+  "highlighterHint": "일정 이름과 색·기간을 정하면 그 날짜들을 형광펜으로 칠하고 아래에 일정으로 표시해요.",
+  "schedulePlaceholder": "일정 이름 (예: 여름 휴가)",
+  "from": "시작",
+  "to": "종료",
+  "addHighlight": "일정 추가"
+}

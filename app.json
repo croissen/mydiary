@@ -1,25 +1,50 @@
 {
   "expo": {
-    "name": "mydiary",
+    "name": "한 줄 일기",
     "slug": "mydiary",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "mydiary",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mydiary.app"
     },
     "android": {
+      "package": "com.mydiary.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-localization",
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "color": "#4A6FA5"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4efaad0d-026e-4fa1-88f2-0de2fb8fc781"
+      }
+    },
+    "owner": "croissen"
   }
 }
