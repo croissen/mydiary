@@ -16,7 +16,6 @@ export function WelcomeScreen({ navigation }: Props) {
       <View style={styles.body}>
         <Text style={styles.emoji}>📔</Text>
         <Text style={styles.title}>{t('welcome.title')}</Text>
-        <Text style={styles.subtitle}>{t('welcome.subtitle')}</Text>
       </View>
       <View style={styles.footer}>
         <Button title={t('welcome.start')} onPress={() => navigation.navigate('NotifIntro')} />

@@ -13,7 +13,10 @@ import { AnswerScreen } from '../screens/AnswerScreen';
 import { DiaryScreen } from '../screens/DiaryScreen';
 import { NoteEditorScreen } from '../screens/NoteEditorScreen';
 import { DateNotesScreen } from '../screens/DateNotesScreen';
+import { PaywallScreen } from '../screens/PaywallScreen';
+import { SubscriptionScreen } from '../screens/SubscriptionScreen';
 import { useSettings } from '../state/SettingsContext';
+import { useAuth } from '../auth/AuthContext';
 import { handleNotificationResponse, rescheduleAll } from '../notifications';
 import { ensureDiaries } from '../services/diary';
 import { getDiaryByDate, getResponsesByDate } from '../db';
@@ -26,6 +29,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export function RootNavigator() {
   const { t } = useTranslation(['home', 'diary', 'common']);
   const { settings, ready } = useSettings();
+  const { canUseAI } = useAuth();
   const navRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
   const onboarded = settings.first_launch_completed;
 
@@ -50,14 +54,21 @@ export function RootNavigator() {
   // Announces freshly created diaries; AI failures stay silent here (the
   // compile-reminder tap surfaces a retry instead).
   const checkDiary = useCallback(async () => {
-    if (!onboarded) return;
+    if (!onboarded || !canUseAI) return;
     const { created } = await ensureDiaries(settingsRef.current);
     if (created.length > 0) announceDiary(created[created.length - 1].date);
-  }, [onboarded, announceDiary]);
+  }, [onboarded, canUseAI, announceDiary]);
 
   // Compile-reminder tap: open today's diary, or — if compiling failed despite
   // having responses — offer a retry instead of falsely saying "no records".
   const openTodayDiaryOrRetry = useCallback(async () => {
+    if (!canUseAI) {
+      Alert.alert(
+        t('common:appName'),
+        t('home:aiLocked')
+      );
+      return;
+    }
     const { failed } = await ensureDiaries(settingsRef.current);
     const today = todayStr();
     const diary = await getDiaryByDate(today);
@@ -166,6 +177,16 @@ export function RootNavigator() {
               name="DateNotes"
               component={DateNotesScreen}
               options={{ title: '' }}
+            />
+            <Stack.Screen
+              name="Paywall"
+              component={PaywallScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="Subscription"
+              component={SubscriptionScreen}
+              options={{ headerShown: false }}
             />
           </>
         )}

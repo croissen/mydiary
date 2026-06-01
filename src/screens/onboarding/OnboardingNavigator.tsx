@@ -5,7 +5,7 @@ import { WelcomeScreen } from './WelcomeScreen';
 import { NotifIntroScreen } from './NotifIntroScreen';
 import { NotifTimesScreen } from './NotifTimesScreen';
 import { CompileTimeScreen } from './CompileTimeScreen';
-import { BatteryScreen } from './BatteryScreen';
+import { AuthPromptScreen } from './AuthPromptScreen';
 
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 
@@ -16,7 +16,7 @@ export function OnboardingNavigator() {
       <Stack.Screen name="NotifIntro" component={NotifIntroScreen} />
       <Stack.Screen name="NotifTimes" component={NotifTimesScreen} />
       <Stack.Screen name="CompileTime" component={CompileTimeScreen} />
-      <Stack.Screen name="Battery" component={BatteryScreen} />
+      <Stack.Screen name="AuthPrompt" component={AuthPromptScreen} />
     </Stack.Navigator>
   );
 }

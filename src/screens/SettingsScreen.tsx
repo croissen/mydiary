@@ -11,32 +11,66 @@ import {
 } from 'react-native';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/Button';
 import { Sheet } from '../components/Sheet';
 import { TimePickerField } from '../components/TimePickerField';
-import { exportBackup, parseBackup, pickBackupFile } from '../backup';
-import { getAllSettings, importData, wipeAllData } from '../db';
+import { getAllSettings } from '../db';
 import { rescheduleAll } from '../notifications';
 import { useSettings } from '../state/SettingsContext';
+import { useAuth } from '../auth/AuthContext';
+import { usePro } from '../purchases/PurchasesContext';
 import { BUNDLED_QUESTIONS } from '../settings/defaults';
 import { colors, font, radius, spacing } from '../theme';
 import { AiTone, Question } from '../types';
+import type { RootStackParamList } from '../navigation/types';
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const TONES: AiTone[] = ['casual', 'literary', 'concise', 'custom'];
+const MIN_SLOTS = 3;
+const MAX_SLOTS = 10;
 
 export function SettingsScreen() {
   const { t } = useTranslation(['settings', 'common']);
   const { settings, update, reload } = useSettings();
+  const navigation = useNavigation<Nav>();
+  const { user, signOut, updateDisplayName, syncToCloud, restoreFromCloud, startTrial, trialStarted } = useAuth();
+  const { isPro, isTrialing, trialDaysLeft } = usePro();
+
+  const [nameSheet, setNameSheet] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [nameBusy, setNameBusy] = useState(false);
+
+  const displayName = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? '';
+
+  const openNameEdit = () => {
+    setNameInput(displayName);
+    setNameSheet(true);
+  };
+  const saveNameEdit = async () => {
+    setNameBusy(true);
+    try { await updateDisplayName(nameInput.trim()); setNameSheet(false); }
+    catch { Alert.alert('오류', '이름 변경에 실패했어요.'); }
+    finally { setNameBusy(false); }
+  };
+
+  const planLabel = isTrialing
+    ? `무료 체험 중 D-${trialDaysLeft}`
+    : isPro && trialStarted
+    ? '프리미엄'
+    : !trialStarted
+    ? '무료'
+    : '무료';
 
   const [notifSheet, setNotifSheet] = useState(false);
   const [randomSheet, setRandomSheet] = useState(false);
   const [questionsSheet, setQuestionsSheet] = useState(false);
   const [quietSheet, setQuietSheet] = useState(false);
-  const [backupSheet, setBackupSheet] = useState(false);
-  const [restorePwSheet, setRestorePwSheet] = useState(false);
-  const [infoSheet, setInfoSheet] = useState<null | 'privacy' | 'data'>(null);
-
+  const [privacySheet, setPrivacySheet] = useState(false);
+  const [dataSheet, setDataSheet] = useState(false);
   // Editable copies for sheets.
   const [times, setTimes] = useState(settings.notification_times);
   const [slotOn, setSlotOn] = useState<boolean[]>(
@@ -51,10 +85,46 @@ export function SettingsScreen() {
   const [customStyle, setCustomStyle] = useState(settings.ai_custom_style);
   const [questions, setQuestions] = useState<Question[]>(settings.question_pool);
   const [newQuestion, setNewQuestion] = useState('');
-  const [backupPw, setBackupPw] = useState('');
-  const [restorePw, setRestorePw] = useState('');
-  const [pendingRaw, setPendingRaw] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // ----- Account -----
+  const doSignOut = () => {
+    Alert.alert(t('settings:logoutConfirm'), '', [
+      { text: t('common:cancel'), style: 'cancel' },
+      { text: t('settings:logout'), style: 'destructive', onPress: () => signOut() },
+    ]);
+  };
+
+  const doSyncToCloud = async () => {
+    setBusy(true);
+    try {
+      await syncToCloud();
+      Alert.alert(t('common:appName'), t('settings:syncDone'));
+    } catch {
+      Alert.alert(t('common:error'), t('settings:syncFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const doRestoreFromCloud = async () => {
+    setBusy(true);
+    try {
+      const restored = await restoreFromCloud();
+      if (!restored) {
+        Alert.alert(t('common:appName'), t('settings:restoreNotFound'));
+        return;
+      }
+      await reload();
+      const fresh = await getAllSettings();
+      await rescheduleAll(fresh);
+      Alert.alert(t('common:appName'), t('settings:restoreCloudDone'));
+    } catch {
+      Alert.alert(t('common:error'), t('common:errorGeneric'));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const enabledFixed = (settings.slot_enabled ?? []).filter(
     (v, i) => v !== false && i < settings.notification_times.length
@@ -74,6 +144,18 @@ export function SettingsScreen() {
       slot_questions: slotQ.map((q) => (q.trim() ? q.trim() : null)),
     });
     setNotifSheet(false);
+  };
+  const addNotifSlot = () => {
+    if (times.length >= MAX_SLOTS) return;
+    setTimes((p) => [...p, '09:00']);
+    setSlotOn((p) => [...p, true]);
+    setSlotQ((p) => [...p, '']);
+  };
+  const removeNotifSlot = (i: number) => {
+    if (times.length <= MIN_SLOTS) return;
+    setTimes((p) => p.filter((_, idx) => idx !== i));
+    setSlotOn((p) => p.filter((_, idx) => idx !== i));
+    setSlotQ((p) => p.filter((_, idx) => idx !== i));
   };
 
   // ----- Random -----
@@ -135,122 +217,66 @@ export function SettingsScreen() {
     setQuietSheet(false);
   };
 
-  // ----- Backup / restore / wipe -----
-  const doBackup = async () => {
-    setBusy(true);
-    try {
-      await exportBackup(backupPw || undefined);
-      setBackupSheet(false);
-      setBackupPw('');
-    } catch {
-      Alert.alert(t('common:error'), t('common:errorGeneric'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const applyImport = async (raw: string, password?: string) => {
-    let payload;
-    try {
-      payload = parseBackup(raw, password);
-    } catch (e) {
-      const msg = (e as Error).message;
-      if (msg === 'PASSWORD_REQUIRED') {
-        setPendingRaw(raw);
-        setRestorePwSheet(true);
-        return;
-      }
-      if (msg === 'WRONG_PASSWORD') {
-        Alert.alert(t('common:error'), t('settings:wrongPassword'));
-        return;
-      }
-      Alert.alert(t('common:error'), t('settings:invalidFile'));
-      return;
-    }
-    Alert.alert(t('settings:importMode.title'), '', [
-      { text: t('settings:importMode.overwrite'), onPress: () => runImport(payload!, 'overwrite') },
-      { text: t('settings:importMode.merge'), onPress: () => runImport(payload!, 'merge') },
-      { text: t('common:cancel'), style: 'cancel' },
-    ]);
-  };
-
-  const runImport = async (
-    payload: Awaited<ReturnType<typeof parseBackup>>,
-    mode: 'overwrite' | 'merge'
-  ) => {
-    setBusy(true);
-    try {
-      await importData(
-        {
-          responses: payload.responses,
-          diaries: payload.diaries,
-          settings: payload.settings,
-          folders: payload.folders,
-          notes: payload.notes,
-        },
-        mode
-      );
-      await reload();
-      const fresh = await getAllSettings();
-      await rescheduleAll(fresh);
-      Alert.alert(t('common:appName'), t('settings:restoreDone'));
-    } catch {
-      Alert.alert(t('common:error'), t('common:errorGeneric'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const onRestore = async () => {
-    try {
-      const picked = await pickBackupFile();
-      if (!picked) return;
-      if (picked.encrypted) {
-        setPendingRaw(picked.raw);
-        setRestorePw('');
-        setRestorePwSheet(true);
-      } else {
-        await applyImport(picked.raw);
-      }
-    } catch {
-      Alert.alert(t('common:error'), t('settings:invalidFile'));
-    }
-  };
-
-  const confirmRestorePw = async () => {
-    setRestorePwSheet(false);
-    await applyImport(pendingRaw, restorePw);
-  };
-
-  const onWipe = () => {
-    Alert.alert(t('settings:wipeConfirm1.title'), t('settings:wipeConfirm1.body'), [
-      { text: t('common:cancel'), style: 'cancel' },
-      {
-        text: t('common:delete'),
-        style: 'destructive',
-        onPress: () =>
-          Alert.alert(t('settings:wipeConfirm2.title'), t('settings:wipeConfirm2.body'), [
-            { text: t('common:cancel'), style: 'cancel' },
-            {
-              text: t('settings:wipeConfirm2.action'),
-              style: 'destructive',
-              onPress: async () => {
-                await wipeAllData();
-                await reload();
-                Alert.alert(t('common:appName'), t('settings:wipeDone'));
-              },
-            },
-          ]),
-      },
-    ]);
-  };
-
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.screenTitle}>{t('settings:title')}</Text>
+
+        {/* 계정 섹션 */}
+        <Text style={styles.section}>{t('settings:sections.account')}</Text>
+        <View style={styles.card}>
+          {/* 이름 */}
+          <Pressable style={styles.row} onPress={openNameEdit}>
+            <View style={styles.flex}>
+              <Text style={styles.rowLabel}>
+                {displayName ? `${displayName} 님` : '이름 미설정'}
+              </Text>
+            </View>
+            <Text style={styles.editIcon}>✏️</Text>
+          </Pressable>
+          <Divider />
+          {/* 이메일 */}
+          <View style={styles.row}>
+            <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>{user?.email}</Text>
+          </View>
+          <Divider />
+          {/* 플랜 */}
+          <View style={styles.row}>
+            <View style={styles.flex}>
+              <Text style={styles.rowLabel}>{planLabel}</Text>
+            </View>
+            {!trialStarted ? (
+              <Pressable
+                onPress={async () => {
+                  try {
+                    await startTrial();
+                  } catch {
+                    Alert.alert('오류', '체험 시작에 실패했어요.');
+                  }
+                }}
+                style={styles.planBtn}
+              >
+                <Text style={styles.planBtnText}>7일 무료체험 시작</Text>
+              </Pressable>
+            ) : isTrialing ? (
+              <Pressable onPress={() => navigation.navigate('Paywall')} style={styles.planBtn}>
+                <Text style={styles.planBtnText}>프리미엄 시작하기</Text>
+              </Pressable>
+            ) : isPro ? (
+              <Pressable onPress={() => navigation.navigate('Subscription')} style={styles.planBtn}>
+                <Text style={styles.planBtnText}>구독 관리</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <Divider />
+          <Row label={t('settings:syncToCloud')} value={t('settings:syncToCloudDesc')} onPress={doSyncToCloud} />
+          <Divider />
+          <Row label={t('settings:restoreFromCloud')} value={t('settings:restoreFromCloudDesc')} onPress={doRestoreFromCloud} />
+          <Divider />
+          <Row label={t('settings:logout')} danger onPress={doSignOut} />
+        </View>
 
         <Text style={styles.section}>{t('settings:sections.notifications')}</Text>
         <View style={styles.card}>
@@ -321,22 +347,13 @@ export function SettingsScreen() {
           </View>
         </View>
 
-        <Text style={styles.section}>{t('settings:sections.data')}</Text>
-        <View style={styles.card}>
-          <Row label={t('settings:backup')} value={t('settings:backupDesc')} onPress={() => { setBackupPw(''); setBackupSheet(true); }} />
-          <Divider />
-          <Row label={t('settings:restore')} value={t('settings:restoreDesc')} onPress={onRestore} />
-          <Divider />
-          <Row label={t('settings:wipe')} value={t('settings:wipeDesc')} danger onPress={onWipe} />
-        </View>
-
         <Text style={styles.section}>{t('settings:sections.info')}</Text>
         <View style={styles.card}>
           <Row label={t('settings:appVersion')} value={version} />
           <Divider />
-          <Row label={t('settings:privacy')} onPress={() => setInfoSheet('privacy')} />
+          <Row label={t('settings:privacy')} onPress={() => setPrivacySheet(true)} />
           <Divider />
-          <Row label={t('settings:dataHandling')} onPress={() => setInfoSheet('data')} />
+          <Row label={t('settings:dataHandling')} onPress={() => setDataSheet(true)} />
         </View>
       </ScrollView>
 
@@ -347,10 +364,17 @@ export function SettingsScreen() {
           <View key={i} style={styles.slotCard}>
             <View style={styles.slotHeader}>
               <Text style={styles.slotIndex}>{i + 1}</Text>
-              <Switch
-                value={slotOn[i]}
-                onValueChange={(v) => setSlotOn((prev) => prev.map((x, idx) => (idx === i ? v : x)))}
-              />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                {times.length > MIN_SLOTS && (
+                  <Pressable onPress={() => removeNotifSlot(i)} style={styles.slotRemoveBtn}>
+                    <Text style={styles.slotRemoveBtnText}>−</Text>
+                  </Pressable>
+                )}
+                <Switch
+                  value={slotOn[i]}
+                  onValueChange={(v) => setSlotOn((prev) => prev.map((x, idx) => (idx === i ? v : x)))}
+                />
+              </View>
             </View>
             {slotOn[i] && (
               <>
@@ -369,6 +393,11 @@ export function SettingsScreen() {
             )}
           </View>
         ))}
+        {times.length < MAX_SLOTS && (
+          <Pressable onPress={addNotifSlot} style={styles.addSlotBtn}>
+            <Text style={styles.addSlotBtnText}>+ 알림 시간 추가</Text>
+          </Pressable>
+        )}
         <Button title={t('common:done')} onPress={saveNotif} style={{ marginTop: spacing.md }} />
       </Sheet>
 
@@ -444,46 +473,27 @@ export function SettingsScreen() {
         <Button title={t('common:done')} onPress={saveQuiet} style={{ marginTop: spacing.md }} />
       </Sheet>
 
-      {/* Backup password sheet */}
-      <Sheet visible={backupSheet} title={t('settings:backup')} onClose={() => setBackupSheet(false)}>
-        <Text style={styles.rowLabel}>{t('settings:backupPassword')}</Text>
-        <Text style={styles.helpText}>{t('settings:backupPasswordDesc')}</Text>
-        <TextInput
-          style={styles.input}
-          value={backupPw}
-          onChangeText={setBackupPw}
-          secureTextEntry
-          autoCapitalize="none"
-          placeholder="••••••"
-          placeholderTextColor={colors.textMuted}
-        />
-        <Button title={t('settings:createBackup')} onPress={doBackup} loading={busy} style={{ marginTop: spacing.md }} />
+      {/* Privacy sheet */}
+      <Sheet visible={privacySheet} title={t('settings:privacy')} onClose={() => setPrivacySheet(false)}>
+        <Text style={styles.infoBody}>{t('settings:privacyBody')}</Text>
       </Sheet>
 
-      {/* Restore password sheet */}
-      <Sheet visible={restorePwSheet} title={t('settings:restorePassword')} onClose={() => setRestorePwSheet(false)}>
-        <Text style={styles.helpText}>{t('settings:restorePasswordPrompt')}</Text>
-        <TextInput
-          style={styles.input}
-          value={restorePw}
-          onChangeText={setRestorePw}
-          secureTextEntry
-          autoCapitalize="none"
-          placeholder="••••••"
-          placeholderTextColor={colors.textMuted}
-        />
-        <Button title={t('common:confirm')} onPress={confirmRestorePw} loading={busy} style={{ marginTop: spacing.md }} />
+      {/* Data handling sheet */}
+      <Sheet visible={dataSheet} title={t('settings:dataHandling')} onClose={() => setDataSheet(false)}>
+        <Text style={styles.infoBody}>{t('settings:dataHandlingBody')}</Text>
       </Sheet>
 
-      {/* Info sheet */}
-      <Sheet
-        visible={infoSheet !== null}
-        title={infoSheet === 'privacy' ? t('settings:privacy') : t('settings:dataHandling')}
-        onClose={() => setInfoSheet(null)}
-      >
-        <Text style={styles.infoBody}>
-          {infoSheet === 'privacy' ? t('settings:privacyBody') : t('settings:dataHandlingBody')}
-        </Text>
+      {/* 이름 수정 Sheet */}
+      <Sheet visible={nameSheet} title="이름 수정" onClose={() => setNameSheet(false)}>
+        <TextInput
+          style={styles.input}
+          value={nameInput}
+          onChangeText={setNameInput}
+          placeholder="이름을 입력하세요"
+          placeholderTextColor={colors.textMuted}
+          autoFocus
+        />
+        <Button title="저장" onPress={saveNameEdit} loading={nameBusy} style={{ marginTop: spacing.md }} />
       </Sheet>
     </SafeAreaView>
   );
@@ -527,6 +537,9 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: font.body, color: colors.text },
   rowValue: { fontSize: font.tiny, color: colors.textMuted, marginTop: 2 },
   chevron: { fontSize: 22, color: colors.textMuted },
+  editIcon: { fontSize: 16 },
+  planBtn: { backgroundColor: colors.primary, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
+  planBtnText: { fontSize: font.tiny, color: colors.white, fontWeight: '700' },
   danger: { color: colors.danger },
   divider: { height: 1, backgroundColor: colors.border, marginLeft: spacing.md },
   inlineRow: { padding: spacing.md },
@@ -541,6 +554,10 @@ const styles = StyleSheet.create({
   slotCard: { backgroundColor: colors.card, borderRadius: radius.sm, padding: spacing.md, marginBottom: spacing.sm },
   slotHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   slotIndex: { fontSize: font.body, fontWeight: '700', color: colors.primary },
+  slotRemoveBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  slotRemoveBtnText: { fontSize: 18, color: colors.textSecondary, lineHeight: 22 },
+  addSlotBtn: { paddingVertical: spacing.sm, alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.border, marginTop: spacing.xs },
+  addSlotBtnText: { fontSize: font.small, fontWeight: '600', color: colors.primary },
   input: { backgroundColor: colors.card, borderRadius: radius.sm, padding: spacing.md, fontSize: font.body, color: colors.text, borderWidth: 1, borderColor: colors.border, marginTop: spacing.sm },
   helpText: { fontSize: font.tiny, color: colors.textSecondary, marginBottom: spacing.xs, lineHeight: 18 },
   infoBody: { fontSize: font.body, color: colors.text, lineHeight: 26 },

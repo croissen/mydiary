@@ -9,6 +9,8 @@ import { getDb } from './src/db';
 import { configureNotificationHandler } from './src/notifications';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { SettingsProvider } from './src/state/SettingsContext';
+import { AuthProvider } from './src/auth/AuthContext';
+import { PurchasesProvider } from './src/purchases/PurchasesContext';
 import { colors } from './src/theme';
 
 configureNotificationHandler();
@@ -28,10 +30,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SettingsProvider>
-        <StatusBar style="dark" />
-        <RootNavigator />
-      </SettingsProvider>
+      <PurchasesProvider>
+      <AuthProvider>
+        <SettingsProvider>
+          <StatusBar style="dark" />
+          <RootNavigator />
+        </SettingsProvider>
+      </AuthProvider>
+      </PurchasesProvider>
     </SafeAreaProvider>
   );
 }

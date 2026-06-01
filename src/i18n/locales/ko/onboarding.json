@@ -1,7 +1,6 @@
 {
   "welcome": {
-    "title": "카톡 답하듯\n일기 쓰기",
-    "subtitle": "당신의 일기는 당신 폰에만 있습니다.",
+    "title": "답장하듯 편하게,\n하루가 일기가 돼요",
     "start": "시작하기"
   },
   "notifIntro": {
@@ -15,26 +14,37 @@
   },
   "times": {
     "title": "언제 물어볼까요?",
-    "subtitle": "5개의 시간을 정해주세요. 이 시간에 질문이 와요.",
+    "subtitle": "꼼꼼하게 세팅할수록 더 알찬 일기가 만들어져요",
+    "settingsHint": "설정에서 추가/삭제 가능해요",
     "slot": "{{index}}번째 알림",
     "questionPlaceholder": "이 시간의 질문 (비우면 랜덤)",
     "questionHint": "질문을 비워두면 그 시간대에 어울리는 질문을 랜덤으로 보내드려요.",
     "randomToggle": "랜덤 알림 추가",
     "randomDesc": "하루 중 예상치 못한 시간에 깜짝 질문이 와요.",
     "randomCount": "{{count}}개 추가",
-    "needAll": "5개 시간을 모두 정해주세요"
+    "needAll": "모든 시간을 설정해주세요",
+    "addSlot": "알림 시간 추가"
   },
   "compile": {
-    "title": "하루를 언제 정리할까요?",
-    "subtitle": "이 시간이 되면 그날의 답변을 모아 AI가 일기로 만들어드려요.",
+    "title": "언제 하루를 정리할까요?",
+    "subtitle": "이 시간이 되면 그날의 답변을 모아모아 자연스러운 일기로 만들어 드려요",
     "label": "일기 정리 시간"
   },
-  "battery": {
-    "title": "알림이 안 올 수 있어요",
-    "line1": "안드로이드는 배터리 절약을 위해 앱 알림을 막기도 해요.",
-    "line2": "배터리 최적화에서 이 앱을 예외로 설정하면 알림이 안정적으로 와요.",
-    "openSettings": "설정으로 이동",
-    "skipWarn": "설정하지 않으면 알림을 놓칠 수 있어요.",
-    "finish": "앱 시작하기"
+  "auth": {
+    "title": "오늘부터 7일,\n무료로 써보세요.",
+    "line1": "하루하루 쌓이는 내 이야기가",
+    "line2": "일기가 되는 경험을 해보세요.",
+    "note": "7일 후 자동 결제되지 않아요.",
+    "startTrial": "7일 무료로 시작하기",
+    "hasAccount": "이미 계정이 있어요",
+    "later": "나중에 할래요",
+    "signupTitle": "회원가입",
+    "loginTitle": "로그인",
+    "emailPlaceholder": "이메일",
+    "pwPlaceholder": "비밀번호",
+    "signupBtn": "가입하기",
+    "loginBtn": "로그인",
+    "needsVerification": "이메일을 확인해 주세요. 인증 후 로그인할 수 있어요.",
+    "emptyFields": "이메일과 비밀번호를 입력해주세요."
   }
 }

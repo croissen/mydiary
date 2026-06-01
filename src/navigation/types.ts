@@ -5,7 +5,7 @@ export type OnboardingStackParamList = {
   NotifIntro: undefined;
   NotifTimes: undefined;
   CompileTime: undefined;
-  Battery: undefined;
+  AuthPrompt: undefined;
 };
 
 export type TabParamList = {
@@ -22,4 +22,6 @@ export type RootStackParamList = {
   Diary: { date: string };
   NoteEditor: { noteId: number };
   DateNotes: { date: string };
+  Paywall: undefined;
+  Subscription: undefined;
 };

@@ -18,7 +18,7 @@ export function CompileTimeScreen({ navigation }: Props) {
 
   const onDone = async () => {
     await update({ diary_compile_time: time });
-    navigation.navigate('Battery');
+    navigation.navigate('AuthPrompt');
   };
 
   return (
